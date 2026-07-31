@@ -62,10 +62,23 @@
 
 ### 环境要求
 
-- Python 3.10+
-- Node.js 18+
+- Python 3.10+（仅开发模式需要，打包版不需要）
+- Node.js 18+（仅开发模式需要，打包版不需要）
 
-### 1. 启动后端
+### 💡 Windows 一键启动（开发模式）
+
+```bat
+双击 start.bat
+```
+
+脚本会自动检查 Python / Node.js、安装依赖并启动前后端，浏览器自动打开。
+
+> 📌 依赖大小说明：后端 pip 依赖约 200MB，前端 node_modules 约 300MB（含 Electron）。
+> Windows 安装包（免环境）正在开发中，见 [Roadmap](#-roadmap)。
+
+### 手动启动
+
+#### 1. 启动后端
 
 ```bash
 cd backend
