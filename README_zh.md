@@ -79,7 +79,35 @@
 双击 start.bat
 ```
 
-脚本会自动检查 Python / Node.js、安装依赖并启动前后端，浏览器自动打开。
+脚本自动完成：
+1. 检查 Python / Node.js 是否安装（缺失会提示下载地址和注意事项）
+2. 自动安装后端依赖（`pip install`，首次 1-3 分钟）
+3. 自动安装前端依赖（`npm install`，首次 5-15 分钟）
+4. 启动后端（等待健康检查通过）
+5. 启动前端并自动打开浏览器
+
+停止服务：双击 `stop.bat`
+
+### ❓ 常见问题（FAQ）
+
+**Q: 提示"未检测到 Python"？**
+A: 去 [python.org](https://www.python.org/downloads/) 下载安装包，安装时**必须勾选 "Add Python to PATH"**，装完重新双击 start.bat。
+
+**Q: 提示"未检测到 Node.js"？**
+A: 去 [nodejs.org](https://nodejs.org/) 下载 LTS 版，一路下一步安装，装完重新双击 start.bat。
+
+**Q: 依赖安装失败 / 下载很慢？**
+A: 国内网络问题，重试一次即可（脚本会自动重试一次）。npm 慢可以配置国内镜像：
+```
+npm config set registry https://registry.npmmirror.com
+```
+pip 慢可以加镜像：把 start.bat 里的 `pip install` 改成 `pip install -i https://pypi.tuna.tsinghua.edu.cn/simple`。
+
+**Q: 提示"后端 30 秒内未就绪"？**
+A: 通常是 8720 端口被占用。关闭占用程序后重新启动，或检查防火墙是否拦截 Python。
+
+**Q: 浏览器没自动打开？**
+A: 手动访问 http://127.0.0.1:5174 即可。
 
 > 📌 依赖大小说明：后端 pip 依赖约 200MB，前端 node_modules 约 300MB（含 Electron）。
 > Windows 安装包（免环境）正在开发中，见 [Roadmap](#-roadmap)。

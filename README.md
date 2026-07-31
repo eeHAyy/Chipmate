@@ -77,7 +77,34 @@ Connect your dev board, ChipMate automatically detects serial anomalies (HardFau
 Double-click start.bat
 ```
 
-The script checks Python/Node.js, installs dependencies, starts frontend & backend, and opens the browser automatically.
+The script:
+1. Checks Python / Node.js (prompts with download links if missing)
+2. Installs backend deps (`pip install`, 1-3 min first time)
+3. Installs frontend deps (`npm install`, 5-15 min first time)
+4. Starts backend (waits for health check)
+5. Starts frontend and opens browser automatically
+
+To stop: double-click `stop.bat`
+
+### ❓ FAQ
+
+**Q: "Python not found"?**
+A: Install from [python.org](https://www.python.org/downloads/), **check "Add Python to PATH"** during install, then re-run start.bat.
+
+**Q: "Node.js not found"?**
+A: Install the LTS version from [nodejs.org](https://nodejs.org/), then re-run start.bat.
+
+**Q: Dependency install failed / slow?**
+A: Network issue — the script retries once. For slow npm, use a mirror:
+```
+npm config set registry https://registry.npmmirror.com
+```
+
+**Q: "Backend not ready in 30s"?**
+A: Port 8720 is likely occupied. Close the conflicting program and retry, or check firewall settings.
+
+**Q: Browser didn't open automatically?**
+A: Manually visit http://127.0.0.1:5174
 
 > 📌 Dependencies: backend pip deps ~200MB, frontend node_modules ~300MB (incl. Electron).
 > A no-environment Windows installer is in development, see [Roadmap](#-roadmap).
