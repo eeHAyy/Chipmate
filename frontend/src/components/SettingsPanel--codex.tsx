@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import * as api from "./api--codex";
+import { t } from "../i18n";
 
 interface SettingsData {
   base_url: string;
@@ -26,6 +27,14 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
     api.getChatSettings().then(setSettings).catch(() => {});
   }, []);
 
+  const resolveNote = useCallback((note?: string) => {
+    if (!note) return t("settings.preset_hint");
+    if (note.startsWith("placeholder-")) {
+      return t("settings.preset_" + note.replace("placeholder-", ""));
+    }
+    return note;
+  }, []);
+
   const save = useCallback(async () => {
     setSaving(true);
     setMsg("");
@@ -35,10 +44,10 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
       if (settings.base_url !== "https://api.deepseek.com") body.base_url = settings.base_url;
       if (settings.model !== "deepseek-chat") body.model = settings.model;
       await api.updateChatSettings(body);
-      setMsg("设置已保存（下次提问生效）");
+      setMsg(t("settings.saved"));
       setApiKey("");
     } catch {
-      setMsg("保存失败");
+      setMsg("Save failed");
     }
     setSaving(false);
   }, [apiKey, settings]);
@@ -50,9 +59,9 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
       await api.updateChatSettings({ api_key: "" });
       setSettings(s => ({ ...s, has_key: false }));
       setApiKey("");
-      setMsg("已清除 API Key");
+      setMsg("API Key cleared");
     } catch {
-      setMsg("清除失败");
+      setMsg("Clear failed");
     }
     setSaving(false);
   }, []);
@@ -69,20 +78,20 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
         border: "1px solid var(--border)"
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <span style={{ fontSize: 16, fontWeight: 700 }}>AI 设置</span>
+          <span style={{ fontSize: 16, fontWeight: 700 }}>AI {t("settings.title")}</span>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: 18, cursor: "pointer" }}>✕</button>
         </div>
 
         <div style={{ marginBottom: 16 }}>
           <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 4, color: "var(--text)" }}>
-            API Key {settings.has_key ? <span style={{ color: "var(--success)", fontSize: 11, fontWeight: 400 }}>✓ 已配置</span> : <span style={{ color: "var(--warning)", fontSize: 11, fontWeight: 400 }}>未配置</span>}
+            API Key {settings.has_key ? <span style={{ color: "var(--success)", fontSize: 11, fontWeight: 400 }}>✓</span> : <span style={{ color: "var(--warning)", fontSize: 11, fontWeight: 400 }}>{t("settings.not_configured")}</span>}
           </label>
           <input value={apiKey} onChange={e => setApiKey(e.target.value)}
-            placeholder={settings.has_key ? "留空使用已有配置" : "sk-..."}
+            placeholder={settings.has_key ? t("settings.keep_existing") : "sk-..."}
             type="password"
             style={{ width: "100%", padding: "8px 12px", borderRadius: 6, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 13, outline: "none" }} />
           <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>
-            免费获取 Key：<a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>platform.deepseek.com</a>
+            {t("settings.get_key")}<a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noreferrer" style={{ color: "var(--accent)" }}>platform.deepseek.com</a>
             {settings.has_key && (
               <button onClick={clearKey} disabled={saving}
                 style={{ marginLeft: 8, padding: "2px 8px", borderRadius: 4, border: "1px solid var(--error)", background: "transparent", color: "var(--error)", fontSize: 11, cursor: "pointer" }}>
@@ -93,16 +102,16 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
         </div>
 
         <div style={{ marginBottom: 16 }}>
-          <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 4, color: "var(--text)" }}>接口地址</label>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 4, color: "var(--text)" }}>{t("settings.base_url")}</label>
           <input value={settings.base_url} onChange={e => setSettings(s => ({ ...s, base_url: e.target.value }))}
             placeholder="https://api.deepseek.com"
             style={{ width: "100%", padding: "8px 12px", borderRadius: 6, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 13, outline: "none" }} />
           <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 6 }}>
             {[
-              ["DeepSeek", "https://api.deepseek.com", "deepseek-chat", "需填 Key，新用户送免费额度"],
-              ["豆包", "https://ark.cn-beijing.volces.com/api/v3/", "doubao-pro-32k", "需火山引擎 Key，新用户送免费额度"],
-              ["Ollama", "http://127.0.0.1:11434/v1", "qwen2.5:7b", "本地完全免费，Key 任意填"],
-              ["OpenAI", "https://api.openai.com/v1", "gpt-4o-mini", "需付费 Key"],
+              ["DeepSeek", "https://api.deepseek.com", "deepseek-chat", "placeholder-deepseek"],
+              ["豆包", "https://ark.cn-beijing.volces.com/api/v3/", "doubao-pro-32k", "placeholder-doubao"],
+              ["Ollama", "http://127.0.0.1:11434/v1", "qwen2.5:7b", "placeholder-ollama"],
+              ["OpenAI", "https://api.openai.com/v1", "gpt-4o-mini", "placeholder-openai"],
             ].map(([label, url, model, note]) => (
               <button key={label} onClick={() => setSettings(s => ({ ...s, base_url: url, model, note }))}
                 style={{ padding: "3px 10px", borderRadius: 4, border: "1px solid var(--border)", background: settings.base_url === url ? "var(--accent)" : "transparent", color: settings.base_url === url ? "#fff" : "var(--text-muted)", fontSize: 11, cursor: "pointer" }}>
@@ -111,12 +120,12 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
             ))}
           </div>
           <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6 }}>
-            {settings.note || "点击上方按钮自动填入接口地址和模型名称"}：
+            {resolveNote(settings.note)}：
           </div>
         </div>
 
         <div style={{ marginBottom: 20 }}>
-          <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 4, color: "var(--text)" }}>模型名称</label>
+          <label style={{ display: "block", fontSize: 13, fontWeight: 600, marginBottom: 4, color: "var(--text)" }}>{t("settings.model")}</label>
           <input value={settings.model} onChange={e => setSettings(s => ({ ...s, model: e.target.value }))}
             placeholder="deepseek-chat"
             style={{ width: "100%", padding: "8px 12px", borderRadius: 6, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 13, outline: "none" }} />
@@ -129,12 +138,12 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
 
         <button onClick={save} disabled={saving}
           style={{ width: "100%", padding: "10px", borderRadius: 8, border: "none", background: "var(--accent)", color: "#fff", fontSize: 14, fontWeight: 600, cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1 }}>
-          {saving ? "保存中..." : "保存设置"}
+          {saving ? t("settings.saving") : t("settings.save")}
         </button>
 
         <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 16, lineHeight: 1.6, borderTop: "1px solid var(--border)", paddingTop: 12 }}>
-          设置持久化在后端，重启后保留。<br />
-          环境变量 DEEPSEEK_API_KEY 优先级最高，设置页面不覆盖它。
+          {t("settings.footer1")}<br />
+          {t("settings.footer2")}
         </div>
       </div>
     </div>

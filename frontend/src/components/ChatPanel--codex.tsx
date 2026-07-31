@@ -5,6 +5,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import * as api from "./api--codex";
 import type { DiagnosticRequest } from "./api--codex";
+import { t } from "../i18n";
 
 const STORAGE_KEY = "chipmate-chat-msgs";
 
@@ -198,11 +199,11 @@ export default function ChatPanel({ selectedChip, diagnosticRequest }: ChatPanel
         {msgs.length === 0 && (
           <div style={{ textAlign: "center", marginTop: "15vh", color: "var(--text-muted)" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🔌</div>
-            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>欢迎使用 ChipMate</div>
+            <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>{t("chat.welcome")}</div>
             <div style={{ fontSize: 13, lineHeight: 1.8 }}>
-              左侧拖入 PDF 手册 → AI 自动解析<br />
-              点击 ⚡ 串口 → 连接硬件实时调试<br />
-              错误自动识别，一键分析
+              {t("chat.hint1")}<br />
+              {t("chat.hint2")}<br />
+              {t("chat.hint3")}
             </div>
           </div>
         )}
@@ -210,7 +211,7 @@ export default function ChatPanel({ selectedChip, diagnosticRequest }: ChatPanel
           <div style={{ textAlign: "center", marginBottom: 4 }}>
             <button onClick={clearMsgs}
               style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: 11, cursor: "pointer", padding: "4px 12px", borderRadius: 4 }}
-              title="清空聊天记录">🗑 清空记录</button>
+              title={t("chat.clear")}>{t("chat.clear")}</button>
           </div>
         )}
         {msgs.map((m, i) => (
@@ -245,7 +246,7 @@ export default function ChatPanel({ selectedChip, diagnosticRequest }: ChatPanel
           onKeyDown={e => {
             if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
           }}
-          placeholder={selectedChip ? "向 " + selectedChip + " 提问..." : "输入芯片型号或技术问题..."}
+          placeholder={selectedChip ? t("chat.placeholder_chip", { chip: selectedChip }) : t("chat.placeholder")}
           disabled={loading}
           rows={1}
           style={{
@@ -266,7 +267,7 @@ export default function ChatPanel({ selectedChip, diagnosticRequest }: ChatPanel
               background: "var(--error)", color: "#fff", fontSize: 14,
               cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: 4
             }}>
-            ■ 停止
+            {t("chat.stop")}
           </button>
         ) : (
           <button onClick={send} disabled={!input.trim()}

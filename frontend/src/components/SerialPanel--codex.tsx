@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import * as api from "./api--codex";
 import type { SerialLine, SerialSeverity, SerialPortInfo } from "./api--codex";
+import { t } from "../i18n";
 
 const SEVERITY_COLORS: Record<SerialSeverity, string> = {
   critical: "var(--error)", warning: "var(--warning)", info: "var(--text-muted)"
@@ -37,14 +38,14 @@ function SerialToolbar({ ports, port, setPort, baud, setBaud, connected, simulat
               const desc = p.description.replace(/\(COM\d+\)/g, "").trim();
               return <option key={p.device} value={p.device}>{desc ? p.device + " — " + desc : p.device}</option>;
             })
-          : <option>未检测到串口</option>}
+          : <option>{t("serial.not_detected")}</option>}
       </select>
       <select value={baud} onChange={e => setBaud(Number(e.target.value))}
         style={{ padding: "3px 8px", borderRadius: 4, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 12 }}>
         {[9600,19200,38400,57600,115200,230400,460800,921600].map(b => <option key={b}>{b}</option>)}
       </select>
       {simulating ? (
-        <button onClick={onStopSimulate} title="停止模拟数据" style={{ padding: "3px 12px", borderRadius: 4, border: "none", background: "var(--error)", color: "#fff", fontSize: 11, cursor: "pointer" }}>停止模拟</button>
+        <button onClick={onStopSimulate} title="停止模拟数据" style={{ padding: "3px 12px", borderRadius: 4, border: "none", background: "var(--error)", color: "#fff", fontSize: 11, cursor: "pointer" }}>{t("serial.stop_sim")}</button>
       ) : connected ? (
         <button onClick={onDisconnect} title="点击断开连接"
           style={{ padding: "3px 12px", borderRadius: 4, border: "1px solid var(--success)", background: "rgba(0,184,148,0.15)", color: "var(--success)", fontSize: 11, cursor: "pointer", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
@@ -53,18 +54,18 @@ function SerialToolbar({ ports, port, setPort, baud, setBaud, connected, simulat
         </button>
       ) : (
         <>
-          <button onClick={onConnect} title="连接真实串口" style={{ padding: "3px 12px", borderRadius: 4, border: "none", background: "var(--success)", color: "#fff", fontSize: 11, cursor: "pointer" }}>连接</button>
-          <button onClick={onSimulate} title="无需硬件，生成模拟串口日志" style={{ padding: "3px 12px", borderRadius: 4, border: "1px dashed var(--warning)", background: "transparent", color: "var(--warning)", fontSize: 11, cursor: "pointer" }}>模拟</button>
+          <button onClick={onConnect} title="连接真实串口" style={{ padding: "3px 12px", borderRadius: 4, border: "none", background: "var(--success)", color: "#fff", fontSize: 11, cursor: "pointer" }}>{t("serial.connect")}</button>
+          <button onClick={onSimulate} title="无需硬件，生成模拟串口日志" style={{ padding: "3px 12px", borderRadius: 4, border: "1px dashed var(--warning)", background: "transparent", color: "var(--warning)", fontSize: 11, cursor: "pointer" }}>{t("serial.simulate")}</button>
         </>
       )}
       <button onClick={() => setPaused(!paused)} title="暂停/继续" style={Btn}>{paused ? "▶" : "⏸"}</button>
       <button onClick={() => setHexView(!hexView)} title="Hex 视图" style={{ ...Btn, background: hexView ? "var(--accent)" : "transparent", color: hexView ? "#fff" : "var(--text-muted)" }}>HEX</button>
       <button onClick={() => setShowTs(!showTs)} title="时间戳" style={{ ...Btn, background: showTs ? "rgba(108,92,231,0.2)" : "transparent", color: showTs ? "var(--accent)" : "var(--text-muted)" }}>TS</button>
       <button onClick={() => setAutoScroll(!autoScroll)} title="自动滚动" style={Btn}>{autoScroll ? "↓" : "⏬"}</button>
-      <button onClick={() => setHexSend(!hexSend)} title="Hex 发送模式" style={{ ...Btn, background: hexSend ? "var(--accent)" : "transparent", color: hexSend ? "#fff" : "var(--text-muted)" }}>HEX发</button>
+      <button onClick={() => setHexSend(!hexSend)} title="Hex 发送模式" style={{ ...Btn, background: hexSend ? "var(--accent)" : "transparent", color: hexSend ? "#fff" : "var(--text-muted)" }}>HEX TX</button>
       <button onClick={() => exportLogs("txt")} disabled={lines.length === 0} title="导出 TXT" style={{ ...Btn, cursor: lines.length === 0 ? "default" : "pointer", color: lines.length === 0 ? "var(--border)" : "var(--text-muted)" }}>TXT</button>
       <button onClick={() => exportLogs("csv")} disabled={lines.length === 0} title="导出 CSV" style={{ ...Btn, cursor: lines.length === 0 ? "default" : "pointer", color: lines.length === 0 ? "var(--border)" : "var(--text-muted)" }}>CSV</button>
-      <button onClick={() => setLines([])} style={Btn}>清空</button>
+      <button onClick={() => setLines([])} style={Btn}>{t("serial.clear")}</button>
       <span style={{ marginLeft: "auto", fontSize: 10, color: "var(--text-muted)", fontFamily: "Consolas, monospace" }}>
         RX {rxBytes} / TX {txBytes}
       </span>
@@ -86,11 +87,11 @@ function SerialParamsRow({ bytesize, setBytesize, parity, setParity, stopbits, s
   const Btn = { p: "3px 8px", r: 4, b: "1px solid var(--border)", bg: "transparent", c: "var(--text-muted)", f: 11, cur: "pointer" };
   return (
     <div style={{ padding: "4px 12px", display: "flex", alignItems: "center", gap: 6, borderBottom: "1px solid var(--border)", background: "#0d0e14", flexWrap: "wrap" }}>
-      <span style={{ fontSize: 10, color: "var(--text-muted)" }}>数据位</span>
+      <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{t("serial.data_bits")}</span>
       <select value={bytesize} onChange={e => setBytesize(Number(e.target.value))} style={Sel}>
         {[8,7,6,5].map(b => <option key={b} value={b}>{b}</option>)}
       </select>
-      <span style={{ fontSize: 10, color: "var(--text-muted)" }}>校验</span>
+      <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{t("serial.parity")}</span>
       <select value={parity} onChange={e => setParity(e.target.value)} style={Sel}>
         <option value="N">无</option>
         <option value="E">偶</option>
@@ -98,17 +99,17 @@ function SerialParamsRow({ bytesize, setBytesize, parity, setParity, stopbits, s
         <option value="M">标记</option>
         <option value="S">空格</option>
       </select>
-      <span style={{ fontSize: 10, color: "var(--text-muted)" }}>停止位</span>
+      <span style={{ fontSize: 10, color: "var(--text-muted)" }}>{t("serial.stop_bits")}</span>
       <select value={stopbits} onChange={e => setStopbits(Number(e.target.value))} style={Sel}>
         {[1,1.5,2].map(b => <option key={b} value={b}>{b}</option>)}
       </select>
       <button onClick={() => setAppendNewline(!appendNewline)} title="发送时追加 CRLF"
         style={{ ...Btn, background: appendNewline ? "rgba(108,92,231,0.2)" : "transparent", color: appendNewline ? "var(--accent)" : "var(--text-muted)" }}>
-        {appendNewline ? "\\r\\n" : "无换行"}
+        {appendNewline ? t("serial.newline") : t("serial.no_newline")}
       </button>
       <button onClick={() => setAutoSend(!autoSend)} title="定时发送"
         style={{ ...Btn, background: autoSend ? "var(--accent)" : "transparent", color: autoSend ? "#fff" : "var(--text-muted)" }}>
-        定时{autoSend ? "开" : "关"}
+         t("serial.timed"){autoSend ? t("serial.on") : t("serial.off")}
       </button>
       {autoSend && (
         <>
@@ -146,7 +147,7 @@ function SerialSearchBar({ search, setSearch, filterOnly, setFilterOnly, matchCo
     <div style={{ padding: "4px 12px", display: "flex", alignItems: "center", gap: 6, borderBottom: "1px solid var(--border)", background: "#0d0e14" }}>
       <span style={{ fontSize: 11, color: "var(--text-muted)" }}>🔍</span>
       <input value={search} onChange={e => setSearch(e.target.value)}
-        placeholder="搜索日志..."
+        placeholder={t("serial.search")}
         style={{ flex: 1, padding: "4px 10px", borderRadius: 4, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 12, fontFamily: "Consolas, monospace", outline: "none" }} />
       <button onClick={() => setFilterOnly(!filterOnly)} title="只显示匹配行"
         style={{ padding: "3px 8px", borderRadius: 4, border: "1px solid var(--border)", background: filterOnly ? "var(--accent)" : "transparent", color: filterOnly ? "#fff" : "var(--text-muted)", fontSize: 11, cursor: "pointer" }}>
@@ -203,7 +204,7 @@ function SerialLogView({ innerRef, lines, hexView, showTs, onErrorClick, search,
   if (q && filterOnly && visible.length === 0) {
     return (
       <div ref={innerRef} style={{ flex: 1, overflowY: "auto", padding: "4px 12px", fontFamily: "Consolas, monospace", fontSize: 12, lineHeight: 1.6, background: "#0a0b10", color: "var(--text-muted)", textAlign: "center", paddingTop: 40 }}>
-        没有匹配 " {search} " 的日志
+        {t("serial.no_match", { q: search })}
       </div>
     );
   }
@@ -233,10 +234,10 @@ function SerialInput({ input, setInput, onSend, onKey, inpRef }: {
   return (
     <div style={{ padding: "6px 12px", display: "flex", gap: 6, borderTop: "1px solid var(--border)", background: "#0d0e14" }}>
       <input ref={inpRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={onKey}
-        placeholder="发送 (Enter 发送, ↑↓ 历史)"
+        placeholder={t("serial.placeholder")}
         style={{ flex: 1, padding: "5px 10px", borderRadius: 4, border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: 12, fontFamily: "Consolas, monospace", outline: "none" }} />
       <button onClick={onSend}
-        style={{ padding: "5px 12px", borderRadius: 4, border: "none", background: "var(--accent)", color: "#fff", fontSize: 12, cursor: "pointer" }}>发送</button>
+        style={{ padding: "5px 12px", borderRadius: 4, border: "none", background: "var(--accent)", color: "#fff", fontSize: 12, cursor: "pointer" }}>{t("serial.send")}</button>
     </div>
   );
 }
@@ -322,7 +323,7 @@ export default function SerialPanel({ selectedChip, onDiagnose }: SerialPanelPro
       if (simulating) await api.serialSimulateStop();
       const r = await api.serialConnect(port, baud, bytesize, parity, stopbits);
       if (r.status !== "ok") {
-        alert("连接失败：" + (r.message || r.detail || "未知错误"));
+        alert(t("serial.conn_fail") + (r.message || r.detail || t("serial.unknown_err")));
         return;
       }
       setConnected(true);
@@ -333,7 +334,7 @@ export default function SerialPanel({ selectedChip, onDiagnose }: SerialPanelPro
       setTxBytes(0);
       startPoll();
     } catch (e) {
-      alert("连接失败：" + String(e));
+      alert(t("serial.conn_fail") + String(e));
     }
   }, [port, baud, bytesize, parity, stopbits, startPoll, simulating]);
 
@@ -364,8 +365,8 @@ export default function SerialPanel({ selectedChip, onDiagnose }: SerialPanelPro
     if (!text) return;
     if (isHex) {
       const clean = text.replace(/[\s]/g, "");
-      if (!/^[0-9a-fA-F]+$/.test(clean)) { alert("Hex 发送失败：包含非法字符\n只允许 0-9 A-F 和空格"); return; }
-      if (clean.length % 2 !== 0) { alert("Hex 数据长度必须为偶数"); return; }
+      if (!/^[0-9a-fA-F]+$/.test(clean)) { alert(t("serial.hex_err1")); return; }
+      if (clean.length % 2 !== 0) { alert(t("serial.hex_err2")); return; }
       const ok = await api.serialSend(clean, true, false);
       if (ok.status === "ok") setTxBytes(n => n + clean.length / 2);
     } else {

@@ -6,6 +6,7 @@ import { healthCheck } from "./components/api--codex";
 import SettingsPanel from "./components/SettingsPanel--codex";
 import FlashPanel from "./components/FlashPanel--codex";
 import type { BackendStatus, DiagnosticRequest, SerialLine } from "./components/api--codex";
+import { t, getLang, setLang } from "./i18n";
 
 function getInitialTheme(): "dark" | "light" {
   const saved = localStorage.getItem("chipmate-theme");
@@ -108,8 +109,13 @@ export default function App() {
           )}
 
           <span style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
-            <span onClick={() => setShowSettings(true)} title="AI 设置" style={{ fontSize: 16, cursor: "pointer", padding: "2px 6px", color: "var(--text-muted)", userSelect: "none" }}>⚙</span>
-            <span onClick={toggleTheme} title="切换主题"
+            <span onClick={() => setShowSettings(true)} title={t("settings.title")} style={{ fontSize: 16, cursor: "pointer", padding: "2px 6px", color: "var(--text-muted)", userSelect: "none" }}>⚙</span>
+            <span onClick={() => setLang(getLang() === "zh" ? "en" : "zh")} title={t("theme")}
+              style={{ fontSize: 12, padding: "4px 8px", borderRadius: 6, cursor: "pointer",
+                color: "var(--accent)", border: "1px solid var(--border)", userSelect: "none", fontWeight: 600 }}>
+              {getLang() === "zh" ? "EN" : "中"}
+            </span>
+            <span onClick={toggleTheme} title={t("theme")}
               style={{ fontSize: 16, cursor: "pointer", padding: "2px 6px", borderRadius: 4,
                 color: "var(--text-muted)", userSelect: "none" }}>
               {theme === "dark" ? "☀️" : "🌙"}
@@ -119,19 +125,19 @@ export default function App() {
                 cursor: "pointer", background: showSerial ? "var(--accent)" : "var(--bg)",
                 color: showSerial ? "#fff" : "var(--text-muted)",
                 border: "1px solid var(--border)", transition: "all 0.2s" }}>
-              ⚡ 串口
+              ⚡ {t("serial")}
             </span>
             <span onClick={() => { setShowSerial(false); setShowFlash(!showFlash); }}
               style={{ fontSize: 12, padding: "4px 12px", borderRadius: 6,
                 cursor: "pointer", background: showFlash ? "var(--accent)" : "var(--bg)",
                 color: showFlash ? "#fff" : "var(--text-muted)",
                 border: "1px solid var(--border)", transition: "all 0.2s" }}>
-              🔥 烧录
+              🔥 {t("flash")}
             </span>
             <span style={{ fontSize: 11, padding: "3px 10px", borderRadius: 10,
               background: backendStatus === "online" ? "rgba(0,184,148,0.15)" : "rgba(225,112,85,0.15)",
               color: backendStatus === "online" ? "var(--success)" : "var(--error)" }}>
-              {backendStatus === "online" ? "在线" : "离线"}
+              {backendStatus === "online" ? t("online") : t("offline")}
             </span>
           </span>
         </header>
