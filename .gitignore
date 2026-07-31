@@ -1,0 +1,40 @@
+# ---- Node / 前端 ----
+node_modules/
+dist/
+*.local
+npm-debug.log*
+
+# ---- Python / 后端 ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# ---- 环境变量（含 API Key，必须忽略）----
+.env
+.env.local
+
+# ---- 后端运行时数据（用户上传 + 芯片解析 + 设置）----
+backend/data/uploads/
+backend/data/chips/
+backend/data/settings.json
+
+# ---- Keil / 单片机编译产物 ----
+*.obj
+*.lst
+*.m51
+*.hex
+*.plg
+*.lnp
+*.bak
+*.uvgui.*
+test.__i
+STARTUP.OBJ
+
+# ---- 系统 / 编辑器 ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
