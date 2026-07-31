@@ -1,143 +1,149 @@
+<div align="center">
+
 # 🔌 ChipMate
 
-**AI 驱动的嵌入式故障诊断工作站** — 连接串口，AI 帮你读懂芯片在说什么。
+**AI-powered Embedded Fault Diagnosis Workstation** — Plug in your serial port, let AI read what your chip is saying.
 
-接上开发板，ChipMate 自动识别串口异常（HardFault / Watchdog / Stack Overflow...），结合芯片手册数据，让 AI 给出排查步骤和修复建议。支持 **STC 单片机一键烧录**，无需硬件也能用**模拟模式**完整体验。
+[English](README.md) | [简体中文](README_zh.md)
 
-> 🎯 核心闭环：`连接串口 → 捕获异常 → 识别故障 → 结合芯片手册 → AI 分析 → 输出排查报告`
+</div>
 
----
+Connect your dev board, ChipMate automatically detects serial anomalies (HardFault / Watchdog / Stack Overflow...) and combines chip datasheet data for AI to give you troubleshooting steps and fixes. Supports **one-click STC MCU flashing**, and a **simulation mode** lets you experience everything without hardware.
 
-## ✨ 功能亮点
-
-| 功能 | 说明 |
-|------|------|
-| 🩺 **AI 故障诊断** | 串口日志自动识别 HardFault、BusFault、Watchdog、Timeout 等 10+ 种异常，点击错误行一键 AI 分析 |
-| 📚 **芯片手册上下文** | 拖入 PDF 数据手册，AI 回答引用具体引脚和寄存器 |
-| 🔥 **STC 一键烧录** | 加载 HEX 文件，选择芯片型号和串口，冷启动即可烧录 STC 89/12/15/8 全系列 |
-| 🎮 **模拟演示模式** | 无需硬件，生成模拟串口日志，完整体验故障识别 + AI 诊断闭环 |
-| ⚡ **流式输出** | AI 回复逐字显示，支持随时停止 |
-| 🎨 **多模型支持** | DeepSeek / OpenAI / Ollama / 豆包，界面直接配置 API Key，无需改文件 |
-| 🔍 **日志搜索过滤** | 关键字高亮 / 过滤模式，支持 TXT/CSV 导出 |
-| 🖱️ **可拖拽布局** | 侧栏宽度、面板高度自由调整 |
-| 🌗 **深色/浅色主题** | 一键切换，自动保存偏好 |
-| 📊 **完整串口参数** | 数据位 / 停止位 / 校验位 / 定时发送 / 收发字节计数 |
+> 🎯 Core loop: `Connect serial → Capture anomaly → Identify fault → Reference datasheet → AI analysis → Diagnosis report`
 
 ---
 
-## 🖼️ 截图
+## ✨ Features
 
-<!-- 在这里放你的截图：
-![主界面](docs/screenshots/main.png)
-![AI 故障诊断](docs/screenshots/diagnose.png)
-![烧录界面](docs/screenshots/flash.png)
-![模拟模式](docs/screenshots/simulate.png)
+| Feature | Description |
+|---------|-------------|
+| 🩺 **AI Fault Diagnosis** | Auto-detects 10+ anomaly types (HardFault, BusFault, Watchdog, Timeout...), click an error line for one-click AI analysis |
+| 📚 **Datasheet Context** | Drag in a PDF datasheet, AI answers reference specific pins and registers |
+| 🔥 **One-click STC Flashing** | Load HEX file, pick chip model & port, cold-boot flash for STC 89/12/15/8 series |
+| 🎮 **Simulation Mode** | No hardware needed — generated logs walk you through the full diagnosis loop |
+| ⚡ **Streaming Output** | AI replies token-by-token, stoppable anytime |
+| 🎨 **Multi-Model Support** | DeepSeek / OpenAI / Ollama / Doubao, configure API key in UI — no file editing |
+| 🔍 **Log Search & Filter** | Keyword highlight / filter mode, TXT/CSV export |
+| 🖱️ **Draggable Layout** | Resizable sidebar and panel heights |
+| 🌗 **Dark / Light Themes** | One-click switch, preference saved |
+| 📊 **Full Serial Params** | Data bits / stop bits / parity / timed send / RX-TX byte counters |
+
+---
+
+## 🖼️ Screenshots
+
+<!-- Add your screenshots here:
+![Main UI](docs/screenshots/main.png)
+![AI Diagnosis](docs/screenshots/diagnose.png)
+![Flashing](docs/screenshots/flash.png)
+![Simulation](docs/screenshots/simulate.png)
 -->
 
-> 📝 截图占位 —— 运行 `npm run dev` 后按需补充
+> 📝 Placeholder — run `npm run dev` and capture screens to fill in.
 
 ---
 
-## 🏗️ 架构
+## 🏗️ Architecture
 
 ```
 ┌─────────────────────────┐        ┌──────────────────────────┐
 │   Electron + React UI   │  HTTP  │      Python FastAPI      │
 │                         │ ─────► │                          │
-│  ChatPanel  SerialPanel │        │  /chat     AI 对话(流式)  │
-│  ChipPanel  FlashPanel  │        │  /serial   串口管理       │
-│  Settings  搜索/过滤     │        │  /flash    STC 烧录       │
-│                         │        │  /datasheet 芯片手册解析   │
+│  ChatPanel  SerialPanel │        │  /chat      AI (stream)  │
+│  ChipPanel  FlashPanel  │        │  /serial    Serial mgmt  │
+│  Settings  Search/Filter│        │  /flash     STC flashing │
+│                         │        │  /datasheet PDF parsing  │
 └─────────────────────────┘        └──────────┬───────────────┘
                                               │
                                     ┌─────────┴─────────┐
                                     │ DeepSeek/OpenAI/  │
-                                    │ Ollama/豆包  API   │
+                                    │ Ollama/Doubao API │
                                     └───────────────────┘
 ```
 
 ---
 
-## 🚀 快速开始
+## 🚀 Quick Start
 
-### 环境要求
+### Requirements
 
-- Python 3.10+（仅开发模式需要，打包版不需要）
-- Node.js 18+（仅开发模式需要，打包版不需要）
+- Python 3.10+ (dev mode only, not needed for packaged build)
+- Node.js 18+ (dev mode only, not needed for packaged build)
 
-### 💡 Windows 一键启动（开发模式）
+### 💡 Windows One-Click Start (dev mode)
 
 ```bat
-双击 start.bat
+Double-click start.bat
 ```
 
-脚本会自动检查 Python / Node.js、安装依赖并启动前后端，浏览器自动打开。
+The script checks Python/Node.js, installs dependencies, starts frontend & backend, and opens the browser automatically.
 
-> 📌 依赖大小说明：后端 pip 依赖约 200MB，前端 node_modules 约 300MB（含 Electron）。
-> Windows 安装包（免环境）正在开发中，见 [Roadmap](#-roadmap)。
+> 📌 Dependencies: backend pip deps ~200MB, frontend node_modules ~300MB (incl. Electron).
+> A no-environment Windows installer is in development, see [Roadmap](#-roadmap).
 
-### 手动启动
+### Manual Start
 
-#### 1. 启动后端
+#### 1. Start backend
 
 ```bash
 cd backend
 pip install -r requirements.txt
-pip install stcgal        # STC 烧录工具（可选）
+pip install stcgal        # STC flashing tool (optional)
 cp ../.env.example ../.env
-python main.py            # 启动在 http://127.0.0.1:8720
+python main.py            # runs at http://127.0.0.1:8720
 ```
 
-### 2. 启动前端
+#### 2. Start frontend
 
 ```bash
 cd frontend
 npm install
-npm run dev               # 启动在 http://127.0.0.1:5174
+npm run dev               # runs at http://127.0.0.1:5174
 ```
 
-### 3. 配置 AI
+#### 3. Configure AI
 
-点击右上角 ⚙️ 设置：
-- **DeepSeek**（推荐）：注册 [platform.deepseek.com](https://platform.deepseek.com) 送免费额度，填入 API Key
-- **Ollama 本地**：完全免费，接口地址填 `http://127.0.0.1:11434/v1`
-- 或点击预设按钮一键填入豆包 / OpenAI
+Click ⚙️ in the top-right:
+- **DeepSeek** (recommended): register at [platform.deepseek.com](https://platform.deepseek.com) for free credits, paste your API key
+- **Ollama local**: fully free, set base URL to `http://127.0.0.1:11434/v1`
+- Or hit a preset button for Doubao / OpenAI
 
-### 4. 快速体验（无需硬件）
+#### 4. Quick experience (no hardware)
 
-1. 点击顶部 **⚡ 串口** 打开串口面板
-2. 点 **模拟** 按钮 —— 自动生成模拟嵌入式日志
-3. 点击红色错误行（如 HardFault）→ AI 自动分析
+1. Click **⚡ Serial** in the top bar
+2. Click **Simulate** — generates realistic embedded logs
+3. Click a red error line (e.g. HardFault) → AI analyzes it
 
-### 5. 烧录 STC 单片机
+#### 5. Flash an STC MCU
 
-1. 点击顶部 **🔥 烧录**
-2. 拖入 Keil 生成的 HEX 文件
-3. 选择芯片型号和串口
-4. 点开始烧录，**给 MCU 断电再上电**，等待烧录完成
+1. Click **🔥 Flash** in the top bar
+2. Drag in your Keil-generated HEX file
+3. Select chip model and port
+4. Hit start, **power-cycle the MCU** (cold boot), wait for completion
 
 ---
 
-## 🛠️ 技术栈
+## 🛠️ Tech Stack
 
-- **前端**：Electron + React 18 + TypeScript + Vite
-- **后端**：Python FastAPI + pyserial
-- **AI**：OpenAI SDK（兼容 DeepSeek / OpenAI / Ollama / 豆包）
-- **烧录**：stcgal（STC 全系列 ISP 协议）
+- **Frontend**: Electron + React 18 + TypeScript + Vite
+- **Backend**: Python FastAPI + pyserial
+- **AI**: OpenAI SDK (compatible with DeepSeek / OpenAI / Ollama / Doubao)
+- **Flashing**: stcgal (STC full-series ISP protocol)
 
 ---
 
 ## 🗺️ Roadmap
 
-- [x] 流式 AI 对话 + 多轮上下文
-- [x] 串口故障识别 + AI 诊断闭环
-- [x] 模拟数据演示模式
-- [x] STC 单片机烧录
-- [x] 串口搜索 / 过滤 / 导出
-- [ ] 芯片手册向量检索（RAG，带来源页码）
-- [ ] Modbus 协议解析
-- [ ] 嵌入式计算器（波特率 / 定时器 / CRC）
-- [ ] Windows 安装包发布
+- [x] Streaming AI chat + multi-turn context
+- [x] Serial fault detection + AI diagnosis loop
+- [x] Simulation demo mode
+- [x] STC MCU flashing
+- [x] Serial search / filter / export
+- [ ] Datasheet vector search (RAG with source page refs)
+- [ ] Modbus protocol parsing
+- [ ] Embedded calculators (baud / timer / CRC)
+- [ ] Windows installer release
 
 ---
 
