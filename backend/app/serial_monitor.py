@@ -226,13 +226,21 @@ async def list_ports():
         import serial.tools.list_ports
         result = []
         for p in serial.tools.list_ports.comports():
+            hwid = (p.hwid or "").upper()
+            desc = p.description or ""
+            # 蓝牙虚拟串口对单片机工具没有意义，反而容易选错
+            if hwid.startswith("BTHENUM") or "蓝牙" in desc or "Bluetooth" in desc:
+                continue
             result.append({
                 "device": p.device,
-                "description": p.description,
+                "description": desc,
                 "vid": p.vid,
                 "pid": p.pid,
                 "manufacturer": p.manufacturer or "",
+                "usb": bool(p.vid),
             })
+        # 真 USB 串口排前面
+        result.sort(key=lambda x: (not x["usb"], x["device"]))
         return result
     except ImportError:
         return []
@@ -264,12 +272,28 @@ async def simulate_stop(_=Depends(require_token)):
 
 @router.post("/connect")
 async def connect(config: SerialConfig, _=Depends(require_token)):
+    # 正在烧录会占着同一个串口，回到监控页时把烧录进程收掉
     try:
-        serial_manager.connect(config.port, config.baudrate, config.bytesize, config.parity, config.stopbits)
-        return {"status": "ok", "port": config.port, "baudrate": config.baudrate,
-                "bytesize": config.bytesize, "parity": config.parity, "stopbits": config.stopbits}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        from .flash import kill_active_burn
+        if kill_active_burn():
+            import time as _t
+            _t.sleep(0.6)  # 等 stcgal 退出、系统释放句柄
+    except Exception:
+        pass
+    last_err = None
+    for attempt in range(3):
+        try:
+            serial_manager.connect(config.port, config.baudrate, config.bytesize,
+                                   config.parity, config.stopbits)
+            return {"status": "ok", "port": config.port, "baudrate": config.baudrate,
+                    "bytesize": config.bytesize, "parity": config.parity,
+                    "stopbits": config.stopbits}
+        except Exception as e:
+            last_err = e
+            if attempt < 2:
+                import time as _t
+                _t.sleep(0.5)
+    raise HTTPException(status_code=400, detail=f"{last_err}｜串口可能被 STC-ISP、串口助手等程序占用，请关闭后重试")
 
 
 @router.post("/disconnect")

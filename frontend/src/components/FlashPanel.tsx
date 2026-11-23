@@ -19,7 +19,7 @@ function logColor(line: string): string {
   if (line.startsWith("✓")) return "var(--success)";
   if (line.startsWith("✗") || line.startsWith("⚠") || line.startsWith("ERROR")) return "var(--error)";
   if (line.startsWith("$")) return "var(--accent)";
-  if (line.includes("Wait for MCU") || line.includes("握手") || line.includes("断电")) return "var(--warning)";
+  if (line.includes("Wait for MCU") || line.includes("Waiting for MCU") || line.includes("握手") || line.includes("复位")) return "var(--warning)";
   return "var(--text-muted)";
 }
 
