@@ -44,7 +44,7 @@
 |---|---|
 | ![STC 烧录](docs/screenshots/flash.png) | ![AI 与模型设置](docs/screenshots/settings.png) |
 
-> 以上为 v0.4.2 实际运行界面，模拟模式无需连接硬件。
+> 以上为 v0.4.3 实际运行界面，模拟模式无需连接硬件。
 
 ---
 
@@ -112,7 +112,7 @@ A: 通常是 8720 端口被占用。关闭占用程序后重新启动，或检�
 A: 手动访问 http://127.0.0.1:5174 即可。
 
 > 📌 依赖大小说明：后端 pip 依赖约 200MB，前端 node_modules 约 300MB（含 Electron）。
-> Windows 免环境安装包已发布：见 [Releases](../../releases/latest)（v0.4.2，NSIS，未签名）。
+> Windows 免环境安装包已发布：见 [Releases](../../releases/latest)（v0.4.3，NSIS，未签名）。
 
 ### 手动启动
 
