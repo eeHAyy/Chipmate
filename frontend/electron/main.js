@@ -6,12 +6,17 @@ let mainWindow;
 let pythonProcess;
 
 function startBackend() {
-  const pythonPath = "python";
-  const mainPy = path.join(__dirname, "..", "..", "backend", "main.py");
-  pythonProcess = spawn(pythonPath, [mainPy], {
-    cwd: path.join(__dirname, "..", "..", "backend"),
-    stdio: "pipe"
-  });
+  let cmd, args, cwd;
+  if (app.isPackaged) {
+    cwd = path.join(process.resourcesPath, "backend");
+    cmd = path.join(cwd, "chipmate-backend.exe");
+    args = [];
+  } else {
+    cwd = path.join(__dirname, "..", "..", "backend");
+    cmd = "python";
+    args = [path.join(cwd, "main.py")];
+  }
+  pythonProcess = spawn(cmd, args, { cwd, stdio: "pipe" });
   pythonProcess.stdout.on("data", d => console.log("[backend]", d.toString().trim()));
   pythonProcess.stderr.on("data", d => console.log("[backend]", d.toString().trim()));
 }

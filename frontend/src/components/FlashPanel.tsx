@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import * as api from "./api--codex";
-import type { SerialPortInfo } from "./api--codex";
+import * as api from "./api";
+import type { SerialPortInfo } from "./api";
 import { t } from "../i18n";
 
 const PROTOCOLS: [string, string][] = [

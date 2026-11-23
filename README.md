@@ -33,14 +33,15 @@ Connect your dev board, ChipMate automatically detects serial anomalies (HardFau
 
 ## 🖼️ Screenshots
 
-<!-- Add your screenshots here:
-![Main UI](docs/screenshots/main.png)
-![AI Diagnosis](docs/screenshots/diagnose.png)
-![Flashing](docs/screenshots/flash.png)
-![Simulation](docs/screenshots/simulate.png)
--->
+| Main UI | Serial monitor & simulate mode |
+|---|---|
+| ![Main UI](docs/screenshots/main.png) | ![Serial monitor](docs/screenshots/serial.png) |
 
-> 📝 Placeholder — run `npm run dev` and capture screens to fill in.
+| STC flashing | AI & model settings |
+|---|---|
+| ![STC flashing](docs/screenshots/flash.png) | ![AI settings](docs/screenshots/settings.png) |
+
+> Captured from the running v0.1.0 build; simulation mode needs no hardware.
 
 ---
 
@@ -107,7 +108,7 @@ A: Port 8720 is likely occupied. Close the conflicting program and retry, or che
 A: Manually visit http://127.0.0.1:5174
 
 > 📌 Dependencies: backend pip deps ~200MB, frontend node_modules ~300MB (incl. Electron).
-> A no-environment Windows installer is in development, see [Roadmap](#-roadmap).
+> A no-environment Windows installer is available: see [Releases](../../releases/latest) (v0.2.0, NSIS, unsigned).
 
 ### Manual Start
 
@@ -170,7 +171,7 @@ Click ⚙️ in the top-right:
 - [ ] Datasheet vector search (RAG with source page refs)
 - [ ] Modbus protocol parsing
 - [ ] Embedded calculators (baud / timer / CRC)
-- [ ] Windows installer release
+- [x] Windows installer release (v0.2.0, NSIS)
 
 ---
 

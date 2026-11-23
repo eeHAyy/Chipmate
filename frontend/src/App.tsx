@@ -1,11 +1,11 @@
-﻿import { useState, useEffect, useCallback, useRef } from "react";
-import SerialPanel from "./components/SerialPanel--codex";
-import ChatPanel from "./components/ChatPanel--codex";
-import ChipPanel from "./components/ChipPanel--codex";
-import { healthCheck } from "./components/api--codex";
-import SettingsPanel from "./components/SettingsPanel--codex";
-import FlashPanel from "./components/FlashPanel--codex";
-import type { BackendStatus, DiagnosticRequest, SerialLine } from "./components/api--codex";
+import { useState, useEffect, useCallback, useRef } from "react";
+import SerialPanel from "./components/SerialPanel";
+import ChatPanel from "./components/ChatPanel";
+import ChipPanel from "./components/ChipPanel";
+import { healthCheck } from "./components/api";
+import SettingsPanel from "./components/SettingsPanel";
+import FlashPanel from "./components/FlashPanel";
+import type { BackendStatus, DiagnosticRequest, SerialLine } from "./components/api";
 import { t, getLang, setLang } from "./i18n";
 
 function getInitialTheme(): "dark" | "light" {

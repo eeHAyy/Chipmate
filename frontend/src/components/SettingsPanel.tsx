@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import * as api from "./api--codex";
+import * as api from "./api";
 import { t } from "../i18n";
 
 interface SettingsData {

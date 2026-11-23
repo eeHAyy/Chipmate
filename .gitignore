@@ -38,3 +38,8 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# ---- 打包产物 ----
+backend/build/
+backend/*.spec
+frontend/release/

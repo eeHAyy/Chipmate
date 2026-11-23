@@ -35,14 +35,15 @@
 
 ## 🖼️ 截图
 
-<!-- 在这里放你的截图：
-![主界面](docs/screenshots/main.png)
-![AI 故障诊断](docs/screenshots/diagnose.png)
-![烧录界面](docs/screenshots/flash.png)
-![模拟模式](docs/screenshots/simulate.png)
--->
+| 主界面 | 串口监控与模拟模式 |
+|---|---|
+| ![主界面](docs/screenshots/main.png) | ![串口监控与模拟模式](docs/screenshots/serial.png) |
 
-> 📝 截图占位 —— 运行 `npm run dev` 后按需补充
+| STC 烧录 | AI 与模型设置 |
+|---|---|
+| ![STC 烧录](docs/screenshots/flash.png) | ![AI 与模型设置](docs/screenshots/settings.png) |
+
+> 以上为 v0.1.0 实际运行界面，模拟模式无需连接硬件。
 
 ---
 
@@ -110,7 +111,7 @@ A: 通常是 8720 端口被占用。关闭占用程序后重新启动，或检�
 A: 手动访问 http://127.0.0.1:5174 即可。
 
 > 📌 依赖大小说明：后端 pip 依赖约 200MB，前端 node_modules 约 300MB（含 Electron）。
-> Windows 安装包（免环境）正在开发中，见 [Roadmap](#-roadmap)。
+> Windows 免环境安装包已发布：见 [Releases](../../releases/latest)（v0.2.0，NSIS，未签名）。
 
 ### 手动启动
 
@@ -173,7 +174,7 @@ npm run dev               # 启动在 http://127.0.0.1:5174
 - [ ] 芯片手册向量检索（RAG，带来源页码）
 - [ ] Modbus 协议解析
 - [ ] 嵌入式计算器（波特率 / 定时器 / CRC）
-- [ ] Windows 安装包发布
+- [x] Windows 安装包发布（v0.2.0，NSIS）
 
 ---
 

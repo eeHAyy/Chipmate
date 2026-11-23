@@ -8,7 +8,7 @@ from app.serial_monitor import router as serial_router
 from app.datasheet import router as datasheet_router
 from app.flash import router as flash_router
 
-app = FastAPI(title="ChipMate Backend", version="0.1.0")
+app = FastAPI(title="ChipMate Backend", version="0.2.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,7 +24,7 @@ app.include_router(flash_router, prefix="/flash", tags=["flash"])
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "version": "0.1.0"}
+    return {"status": "ok", "version": "0.2.0"}
 
 if __name__ == "__main__":
     import uvicorn

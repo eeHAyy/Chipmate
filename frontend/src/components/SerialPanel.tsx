@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import * as api from "./api--codex";
-import type { SerialLine, SerialSeverity, SerialPortInfo } from "./api--codex";
+import * as api from "./api";
+import type { SerialLine, SerialSeverity, SerialPortInfo } from "./api";
 import { t } from "../i18n";
 
 const SEVERITY_COLORS: Record<SerialSeverity, string> = {
@@ -109,7 +109,7 @@ function SerialParamsRow({ bytesize, setBytesize, parity, setParity, stopbits, s
       </button>
       <button onClick={() => setAutoSend(!autoSend)} title="定时发送"
         style={{ ...Btn, background: autoSend ? "var(--accent)" : "transparent", color: autoSend ? "#fff" : "var(--text-muted)" }}>
-         t("serial.timed"){autoSend ? t("serial.on") : t("serial.off")}
+        {t("serial.timed")}{autoSend ? t("serial.on") : t("serial.off")}
       </button>
       {autoSend && (
         <>

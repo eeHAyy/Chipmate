@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import type { DragEvent } from "react";
-import { listChips, uploadDatasheet, searchChip } from "./api--codex";
-import type { BackendStatus, ChipInfo } from "./api--codex";
+import { listChips, uploadDatasheet, searchChip } from "./api";
+import type { BackendStatus, ChipInfo } from "./api";
 import { t } from "../i18n";
 
 interface ChipPanelProps {

@@ -1,10 +1,10 @@
-﻿import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import * as api from "./api--codex";
-import type { DiagnosticRequest } from "./api--codex";
+import * as api from "./api";
+import type { DiagnosticRequest } from "./api";
 import { t } from "../i18n";
 
 const STORAGE_KEY = "chipmate-chat-msgs";
