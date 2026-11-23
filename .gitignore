@@ -43,3 +43,4 @@ Thumbs.db
 backend/build/
 backend/*.spec
 frontend/release/
+backend/data/token.txt
