@@ -22,6 +22,7 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
   const [apiKey, setApiKey] = useState("");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
+  const [err, setErr] = useState(false);
 
   useEffect(() => {
     api.getChatSettings().then(setSettings).catch(() => {});
@@ -38,30 +39,34 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
   const save = useCallback(async () => {
     setSaving(true);
     setMsg("");
+    setErr(false);
     try {
-      const body: Record<string, string> = {};
+      const body: Record<string, string> = { base_url: settings.base_url, model: settings.model };
       if (apiKey.trim()) body.api_key = apiKey.trim();
-      if (settings.base_url !== "https://api.deepseek.com") body.base_url = settings.base_url;
-      if (settings.model !== "deepseek-chat") body.model = settings.model;
       await api.updateChatSettings(body);
+      const keyed = !!apiKey.trim();
+      setSettings(s => ({ ...s, has_key: s.has_key || keyed, base_url: settings.base_url, model: settings.model }));
       setMsg(t("settings.saved"));
       setApiKey("");
     } catch {
-      setMsg("Save failed");
+      setErr(true);
+      setMsg(t("settings.save_failed"));
     }
     setSaving(false);
-  }, [apiKey, settings]);
+  }, [apiKey, settings.base_url, settings.model]);
 
   const clearKey = useCallback(async () => {
     setSaving(true);
     setMsg("");
+    setErr(false);
     try {
       await api.updateChatSettings({ api_key: "" });
       setSettings(s => ({ ...s, has_key: false }));
       setApiKey("");
-      setMsg("API Key cleared");
+      setMsg(t("settings.key_cleared"));
     } catch {
-      setMsg("Clear failed");
+      setErr(true);
+      setMsg(t("settings.save_failed"));
     }
     setSaving(false);
   }, []);
@@ -78,7 +83,7 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
         border: "1px solid var(--border)"
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <span style={{ fontSize: 16, fontWeight: 700 }}>AI {t("settings.title")}</span>
+          <span style={{ fontSize: 16, fontWeight: 700 }}>{t("settings.title")}</span>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text-muted)", fontSize: 18, cursor: "pointer" }}>✕</button>
         </div>
 
@@ -120,7 +125,7 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
             ))}
           </div>
           <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 6 }}>
-            {resolveNote(settings.note)}：
+            {resolveNote(settings.note)}
           </div>
         </div>
 
@@ -132,9 +137,14 @@ export default function SettingsPanel({ onClose }: SettingsPanelProps) {
           <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 4 }}>
             DeepSeek: deepseek-chat | OpenAI: gpt-4o-mini | Ollama: qwen2.5:7b
           </div>
+          {settings.base_url.includes("volces") && (
+            <div style={{ fontSize: 11, color: "var(--warning)", marginTop: 4 }}>
+              {t("settings.doubao_endpoint")}
+            </div>
+          )}
         </div>
 
-        {msg && <div style={{ fontSize: 13, color: msg.includes("失败") ? "var(--error)" : "var(--success)", marginBottom: 12 }}>{msg}</div>}
+        {msg && <div style={{ fontSize: 13, color: err ? "var(--error)" : "var(--success)", marginBottom: 12 }}>{msg}</div>}
 
         <button onClick={save} disabled={saving}
           style={{ width: "100%", padding: "10px", borderRadius: 8, border: "none", background: "var(--accent)", color: "#fff", fontSize: 14, fontWeight: 600, cursor: saving ? "default" : "pointer", opacity: saving ? 0.6 : 1 }}>

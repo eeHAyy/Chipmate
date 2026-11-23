@@ -86,6 +86,7 @@ function MarkdownContent({ content }: { content: string }) {
 
 export default function ChatPanel({ selectedChip, diagnosticRequest, onOpenSettings }: ChatPanelProps) {
   const ref = useRef<HTMLElement | null>(null);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
   const lastDiagnosticId = useRef(0);
   const firstLoad = useRef(true);
   const userAtBottom = useRef(true);
@@ -189,10 +190,16 @@ export default function ChatPanel({ selectedChip, diagnosticRequest, onOpenSetti
 
   const send = useCallback(() => {
     if (!input.trim() || loading) return;
+    if (hasKey === false) { onOpenSettings(); return; }
     const message = input;
     setInput("");
     sendMessage(message);
-  }, [input, sendMessage, loading]);
+  }, [input, sendMessage, loading, hasKey, onOpenSettings]);
+
+  const useSample = useCallback((text: string) => {
+    setInput(text);
+    inputRef.current?.focus();
+  }, []);
 
   useEffect(() => {
     if (!diagnosticRequest || diagnosticRequest.id <= lastDiagnosticId.current) return;
@@ -220,10 +227,24 @@ export default function ChatPanel({ selectedChip, diagnosticRequest, onOpenSetti
           <div style={{ textAlign: "center", marginTop: "15vh", color: "var(--text-muted)" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🔌</div>
             <div style={{ fontSize: 18, fontWeight: 600, marginBottom: 6 }}>{t("chat.welcome")}</div>
-            <div style={{ fontSize: 13, lineHeight: 1.8 }}>
+            <div style={{ fontSize: 13, lineHeight: 1.8, marginBottom: 20 }}>
               {t("chat.hint1")}<br />
               {t("chat.hint2")}<br />
               {t("chat.hint3")}
+            </div>
+            <div style={{ fontSize: 12, marginBottom: 8 }}>{t("chat.samples_title")}</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "center" }}>
+              {["chat.sample1", "chat.sample2", "chat.sample3"].map(k => (
+                <button key={k} onClick={() => useSample(t(k))}
+                  style={{
+                    maxWidth: 460, padding: "8px 14px", borderRadius: 8,
+                    border: "1px solid var(--border)", background: "var(--bg-card)",
+                    color: "var(--text)", fontSize: 12, lineHeight: 1.5,
+                    cursor: "pointer", textAlign: "left"
+                  }}>
+                  {t(k)}
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -262,7 +283,7 @@ export default function ChatPanel({ selectedChip, diagnosticRequest, onOpenSetti
         display: "flex", gap: 8, background: "var(--bg-card)", flexShrink: 0,
         alignItems: "flex-end"
       }}>
-        <textarea value={input} onChange={e => setInput(e.target.value)}
+        <textarea ref={inputRef} value={input} onChange={e => setInput(e.target.value)}
           onKeyDown={e => {
             if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
           }}

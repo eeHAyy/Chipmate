@@ -41,7 +41,7 @@ Connect your dev board, ChipMate automatically detects serial anomalies (HardFau
 |---|---|
 | ![STC flashing](docs/screenshots/flash.png) | ![AI settings](docs/screenshots/settings.png) |
 
-> Captured from the running v0.3.0 build; simulation mode needs no hardware.
+> Captured from the running v0.3.1 build; simulation mode needs no hardware.
 
 ---
 
@@ -108,7 +108,7 @@ A: Port 8720 is likely occupied. Close the conflicting program and retry, or che
 A: Manually visit http://127.0.0.1:5174
 
 > 📌 Dependencies: backend pip deps ~200MB, frontend node_modules ~300MB (incl. Electron).
-> A no-environment Windows installer is available: see [Releases](../../releases/latest) (v0.3.0, NSIS, unsigned).
+> A no-environment Windows installer is available: see [Releases](../../releases/latest) (v0.3.1, NSIS, unsigned).
 
 ### Manual Start
 
