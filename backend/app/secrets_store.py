@@ -38,10 +38,13 @@ if sys.platform == "win32":
             _kernel32.LocalFree(dst.pbData)
 
 else:
-    PREFIX = "plain:"
+    # 非 Windows 仅做 base64 编码，不提供机密性，仅保证接口一致
+    PREFIX = "b64:"
 
     def protect(value: str) -> str:
-        return PREFIX + value
+        return PREFIX + base64.b64encode(value.encode("utf-8")).decode("ascii")
 
     def unprotect(payload: str) -> str:
-        return payload[len(PREFIX):] if payload.startswith(PREFIX) else payload
+        if not payload.startswith(PREFIX):
+            return payload
+        return base64.b64decode(payload[len(PREFIX):]).decode("utf-8")
