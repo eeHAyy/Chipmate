@@ -61,9 +61,9 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  createWindow();
   startBackend();
   await waitForBackend();
-  createWindow();
 });
 
 app.on("window-all-closed", () => {

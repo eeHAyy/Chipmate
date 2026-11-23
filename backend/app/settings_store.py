@@ -3,7 +3,10 @@ import json
 import os
 from pathlib import Path
 
-SETTINGS_FILE = Path(__file__).parent.parent / "data" / "settings.json"
+from . import paths
+
+SETTINGS_FILE = paths.data_dir() / "settings.json"
+paths.migrate_legacy(SETTINGS_FILE.parent)
 
 DEFAULT = {
     "api_key": "",

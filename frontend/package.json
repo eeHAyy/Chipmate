@@ -1,6 +1,6 @@
 {
   "name": "chipmate",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "AI-powered embedded development assistant",
   "author": "huangshenghua031",
   "main": "electron/main.js",
@@ -45,7 +45,7 @@
     ],
     "win": {
       "target": [{ "target": "nsis", "arch": ["x64"] }],
-      "signAndEditExecutable": false,
+      "icon": "build/icon.ico",
       "artifactName": "ChipMate-Setup-${version}.exe"
     },
     "nsis": {
@@ -53,7 +53,9 @@
       "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "shortcutName": "ChipMate"
+      "shortcutName": "ChipMate",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico"
     }
   }
 }

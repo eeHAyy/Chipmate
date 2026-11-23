@@ -33,9 +33,19 @@ export default function App() {
   }, [theme]);
 
   useEffect(() => {
-    healthCheck()
-      .then(() => setBackendStatus("online"))
-      .catch(() => setBackendStatus("offline"));
+    let alive = true;
+    let timer: number | undefined;
+    const tick = () => {
+      healthCheck()
+        .then(() => { if (alive) setBackendStatus("online"); })
+        .catch(() => {
+          if (!alive) return;
+          setBackendStatus("offline");
+          timer = window.setTimeout(tick, 1200);
+        });
+    };
+    tick();
+    return () => { alive = false; if (timer) window.clearTimeout(timer); };
   }, []);
 
   const toggleTheme = useCallback(() => {
@@ -144,7 +154,7 @@ export default function App() {
 
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0, overflow: "hidden" }}>
           <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
-            <ChatPanel selectedChip={selectedChip} diagnosticRequest={diagnosticRequest} />
+            <ChatPanel selectedChip={selectedChip} diagnosticRequest={diagnosticRequest} onOpenSettings={() => setShowSettings(true)} />
           </div>
 
           {(showSerial || showFlash) && (

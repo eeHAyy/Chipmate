@@ -8,7 +8,10 @@ from pathlib import Path
 
 router = APIRouter()
 
-DATA_DIR = Path(__file__).parent.parent / "data"
+from . import paths
+
+DATA_DIR = paths.data_dir()
+paths.migrate_legacy(DATA_DIR)
 CHIPS_DIR = DATA_DIR / "chips"
 UPLOAD_DIR = DATA_DIR / "uploads"
 

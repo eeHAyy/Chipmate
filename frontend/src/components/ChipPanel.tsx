@@ -41,6 +41,7 @@ export default function ChipPanel({ selectedChip, onSelectChip, backendStatus }:
   }, [onUpload]);
 
   const filtered = chips.filter(c => !query || c.name.toLowerCase().includes(query.toLowerCase()));
+  const selectedMissing = !!selectedChip && !chips.find(c => c.name === selectedChip)?.has_pinmap;
 
   return (
     <aside style={{ width: "100%", minWidth: 0, background: "var(--bg-card)", borderRight: "1px solid var(--border)", display: "flex", flexDirection: "column", height: "100%" }}>
@@ -55,6 +56,11 @@ export default function ChipPanel({ selectedChip, onSelectChip, backendStatus }:
           {uploading ? t("chip.parsing") : t("chip.drop")}
         </div>
         <input ref={inpRef} type="file" accept=".pdf" hidden onChange={e => { const f = e.target.files?.[0]; if (f) onUpload(f); }} />
+        {selectedMissing && (
+          <div style={{ marginTop: 8, fontSize: 11, lineHeight: 1.6, color: "var(--text-muted)", background: "rgba(108,92,231,0.08)", border: "1px solid var(--border)", borderRadius: 6, padding: "6px 8px" }}>
+            {t("chip.no_data_hint")}
+          </div>
+        )}
       </div>
       <div style={{ padding: "8px 14px" }}>
         <input value={query} onChange={e => setQuery(e.target.value)} placeholder={t("chip.search")}

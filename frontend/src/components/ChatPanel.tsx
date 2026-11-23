@@ -17,6 +17,7 @@ interface ChatMessage {
 interface ChatPanelProps {
   selectedChip: string;
   diagnosticRequest: DiagnosticRequest | null;
+  onOpenSettings: () => void;
 }
 
 function loadMsgs(): ChatMessage[] {
@@ -83,7 +84,7 @@ function MarkdownContent({ content }: { content: string }) {
   );
 }
 
-export default function ChatPanel({ selectedChip, diagnosticRequest }: ChatPanelProps) {
+export default function ChatPanel({ selectedChip, diagnosticRequest, onOpenSettings }: ChatPanelProps) {
   const ref = useRef<HTMLElement | null>(null);
   const lastDiagnosticId = useRef(0);
   const firstLoad = useRef(true);
@@ -92,6 +93,19 @@ export default function ChatPanel({ selectedChip, diagnosticRequest }: ChatPanel
   const [msgs, setMsgs] = useState<ChatMessage[]>(loadMsgs);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [hasKey, setHasKey] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    const check = () => {
+      api.getChatSettings()
+        .then(s => { if (alive) setHasKey(s.has_key); })
+        .catch(() => {});
+    };
+    check();
+    const timer = setInterval(check, 5000);
+    return () => { alive = false; clearInterval(timer); };
+  }, []);
 
   // 每次 msgs 变化时持久化（跳过首次加载）
   useEffect(() => {
@@ -196,6 +210,12 @@ export default function ChatPanel({ selectedChip, diagnosticRequest }: ChatPanel
         flex: 1, overflowY: "auto", padding: "16px 20px",
         display: "flex", flexDirection: "column", gap: 12
       }}>
+        {hasKey === false && (
+          <div onClick={onOpenSettings}
+            style={{ alignSelf: "center", cursor: "pointer", fontSize: 12, color: "var(--accent)", border: "1px dashed var(--accent)", borderRadius: 8, padding: "8px 14px", background: "rgba(108,92,231,0.08)" }}>
+            {t("chat.no_key")} · {t("chat.go_settings")} →
+          </div>
+        )}
         {msgs.length === 0 && (
           <div style={{ textAlign: "center", marginTop: "15vh", color: "var(--text-muted)" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🔌</div>
