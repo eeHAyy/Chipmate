@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, UploadFile, File, Form, Depends
 from pydantic import BaseModel
 from typing import Optional
 import os
@@ -9,6 +9,7 @@ from pathlib import Path
 router = APIRouter()
 
 from . import paths
+from .security import require_token
 
 DATA_DIR = paths.data_dir()
 paths.migrate_legacy(DATA_DIR)
@@ -72,7 +73,7 @@ async def list_chips():
 
 
 @router.post("/upload")
-async def upload_datasheet(file: UploadFile = File(...), chip_name: str = Form("")):
+async def upload_datasheet(file: UploadFile = File(...), chip_name: str = Form(""), _=Depends(require_token)):
     name = chip_name.strip() or Path(file.filename).stem
     tmp_path = UPLOAD_DIR / file.filename
     with open(tmp_path, "wb") as f:

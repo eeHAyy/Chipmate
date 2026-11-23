@@ -5,7 +5,9 @@ from pathlib import Path
 from typing import Optional
 from pypdf import PdfReader
 
-DATA_DIR = Path(__file__).parent.parent / "data"
+from . import paths
+
+DATA_DIR = paths.data_dir()
 CHIPS_DIR = DATA_DIR / "chips"
 
 
@@ -13,22 +15,22 @@ class DatasheetParser:
 
     PIN_PATTERNS = [
         re.compile(
-            r"(P[A-E]\d{1,2})\s+.*?(?:Input|Output|I/O|Analog|GPIO|TIM|USART|SPI|I2C|ADC|DAC)",
+            r"((?:P[A-K]\d{1,2}|GPIO\d{1,2}))\s+.*?(?:Input|Output|I/O|Analog|GPIO|TIM|USART|UART|SPI|I2C|ADC|DAC)",
             re.IGNORECASE
         ),
         re.compile(
-            r"^(P[A-E]\d{1,2})\s+([A-Z]{2,4})?\s*(.*?)$",
+            r"^((?:P[A-K]\d{1,2}|GPIO\d{1,2}))\s+([A-Z]{2,4})?\s*(.*?)$",
             re.MULTILINE | re.IGNORECASE
         ),
     ]
 
     REGISTER_PATTERNS = [
         re.compile(
-            r"(0x[0-9A-F]{8})\s+(\w+)\s+(.*?)(?=\s+0x[0-9A-F]{8}|\Z)",
-            re.IGNORECASE
+            r"(0x[0-9A-Fa-f]{2,8})\s+(\w+)\s+(.*?)(?=\s+0x[0-9A-Fa-f]{2,8}|\Z)",
+            re.DOTALL
         ),
         re.compile(
-            r"(\w+)\s+(?:Register|REG)\s*(?:Address)?\s*(0x[0-9A-F]{8})",
+            r"(\w+)\s+(?:Register|REG|寄存器)\s*(?:Address|地址)?\s*(0x[0-9A-Fa-f]{2,8})",
             re.IGNORECASE
         ),
     ]
@@ -111,11 +113,11 @@ class DatasheetParser:
         if not pins:
             pin_candidates = set()
             for line in self.full_text.split("\n"):
-                m = re.match(r"^(P[A-E]\d{1,2})\b", line.strip())
+                m = re.match(r"^((?:P[A-K]\d{1,2}|GPIO\d{1,2}))\b", line.strip(), re.IGNORECASE)
                 if m:
                     pin_candidates.add(m.group(1).upper())
 
-            for name in sorted(pin_candidates, key=lambda x: (x[1], int(re.search(r"\d+", x).group())))[:200]:
+            for name in sorted(pin_candidates, key=lambda x: (re.sub(r"\d+", "", x), int(re.search(r"\d+", x).group())))[:200]:
                 if name not in seen:
                     pins.append({"name": name, "functions": [], "description": ""})
 
@@ -151,19 +153,22 @@ class DatasheetParser:
 
         return registers
     def _extract_with_llm(self, text: str, extract_type: str) -> list[dict]:
-        import os
         from openai import OpenAI
+        from . import settings_store as cfg
 
-        api_key = os.getenv("DEEPSEEK_API_KEY", "")
+        saved = cfg.load()
+        api_key = os.getenv("DEEPSEEK_API_KEY", "") or saved.get("api_key", "")
         if not api_key:
             return []
 
-        client = OpenAI(api_key=api_key, base_url=os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com"))
+        base_url = saved.get("base_url") or os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
+        model = saved.get("model") or "deepseek-chat"
+        client = OpenAI(api_key=api_key, base_url=base_url)
         prompt = self._build_extraction_prompt(text[:15000], extract_type)
 
         try:
             resp = client.chat.completions.create(
-                model="deepseek-chat",
+                model=model,
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.1,
                 max_tokens=4096,

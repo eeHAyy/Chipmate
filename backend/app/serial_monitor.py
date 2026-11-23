@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional
 import threading
@@ -7,6 +7,8 @@ import re
 import json
 
 router = APIRouter()
+
+from .security import require_token
 
 ERROR_PATTERNS = [
     {"pattern": r"HardFault_Handler|HardFault", "severity": "critical",
@@ -89,32 +91,50 @@ class SerialPortManager:
         with self._lock:
             self.lines = []
 
+    def _push_line(self, line: bytes):
+        line = line.rstrip(b"\r")
+        text = line.decode("utf-8", errors="replace").strip()
+        if not text:
+            return
+        matched = None
+        for ep in ERROR_PATTERNS:
+            if re.search(ep["pattern"], text, re.IGNORECASE):
+                matched = dict(ep)
+                break
+        entry = {"text": text, "raw_hex": line.hex(" ").upper(), "ts": time.time(), "error": matched}
+        with self._lock:
+            self.rx_bytes += len(line)
+            self.lines.append(entry)
+            if len(self.lines) > self.max_lines:
+                self.lines = self.lines[-self.max_lines:]
+
     def _read_loop(self):
+        buf = bytearray()
+        last_rx = 0.0
         while self.running:
+            got = False
             try:
                 if self.serial and self.serial.is_open and self.serial.in_waiting > 0:
                     raw = self.serial.read(self.serial.in_waiting)
-                    if not raw:
-                        continue
-                    try:
-                        text = raw.decode("utf-8", errors="replace").rstrip()
-                    except Exception:
-                        text = str(raw)
-
-                    matched = None
-                    for ep in ERROR_PATTERNS:
-                        if re.search(ep["pattern"], text, re.IGNORECASE):
-                            matched = dict(ep)
-                            break
-
-                    entry = {"text": text, "raw_hex": raw.hex(" ").upper(), "ts": time.time(), "error": matched}
-                    with self._lock:
-                        self.rx_bytes += len(raw)
-                        self.lines.append(entry)
-                        if len(self.lines) > self.max_lines:
-                            self.lines = self.lines[-self.max_lines:]
+                    if raw:
+                        got = True
+                        buf += raw
+                        last_rx = time.time()
+                        while True:
+                            idx = buf.find(b"\n")
+                            if idx < 0:
+                                break
+                            line = bytes(buf[:idx])
+                            del buf[:idx + 1]
+                            self._push_line(line)
             except Exception:
                 time.sleep(0.05)
+            # 没有换行结尾的固件 printf，或半截数据，静默 300ms 后按整段输出
+            if buf and time.time() - last_rx > 0.3:
+                self._push_line(bytes(buf))
+                buf.clear()
+            if not got:
+                time.sleep(0.02)
 
     def write(self, data: str, hex_mode: bool = False, newline: bool = True) -> bool:
         if self.serial and self.serial.is_open:
@@ -176,18 +196,7 @@ class SerialPortManager:
         import random
         while self.sim_running:
             text = random.choice(self.SIM_SAMPLES)
-            matched = None
-            for ep in ERROR_PATTERNS:
-                if re.search(ep["pattern"], text, re.IGNORECASE):
-                    matched = dict(ep)
-                    break
-            raw = text.encode("utf-8")
-            entry = {"text": text, "raw_hex": raw.hex(" ").upper(), "ts": time.time(), "error": matched}
-            with self._lock:
-                self.rx_bytes += len(raw)
-                self.lines.append(entry)
-                if len(self.lines) > self.max_lines:
-                    self.lines = self.lines[-self.max_lines:]
+            self._push_line(text.encode("utf-8"))
             time.sleep(0.4)
 
 
@@ -242,19 +251,19 @@ async def get_status():
 
 
 @router.post("/simulate/start")
-async def simulate_start():
+async def simulate_start(_=Depends(require_token)):
     serial_manager.start_simulate()
     return {"status": "ok", "simulating": True}
 
 
 @router.post("/simulate/stop")
-async def simulate_stop():
+async def simulate_stop(_=Depends(require_token)):
     serial_manager.stop_simulate()
     return {"status": "ok", "simulating": False}
 
 
 @router.post("/connect")
-async def connect(config: SerialConfig):
+async def connect(config: SerialConfig, _=Depends(require_token)):
     try:
         serial_manager.connect(config.port, config.baudrate, config.bytesize, config.parity, config.stopbits)
         return {"status": "ok", "port": config.port, "baudrate": config.baudrate,
@@ -264,7 +273,7 @@ async def connect(config: SerialConfig):
 
 
 @router.post("/disconnect")
-async def disconnect():
+async def disconnect(_=Depends(require_token)):
     serial_manager.disconnect()
     return {"status": "ok"}
 
@@ -275,7 +284,7 @@ async def get_lines(since: float = 0):
 
 
 @router.post("/send")
-async def send_data(data: str = "", hex: bool = False, newline: bool = True):
+async def send_data(data: str = "", hex: bool = False, newline: bool = True, _=Depends(require_token)):
     ok = serial_manager.write(data, hex_mode=hex, newline=newline)
     if not ok:
         raise HTTPException(status_code=400, detail="发送失败：请检查串口连接和输入数据")

@@ -109,7 +109,7 @@ class SerialPortManagerTests(unittest.TestCase):
         entries = self.read_entries(b"\xff\x00\r\n")
 
         self.assertEqual(len(entries), 1)
-        self.assertEqual(entries[0]["raw_hex"], "FF 00 0D 0A")
+        self.assertEqual(entries[0]["raw_hex"], "FF 00")
 
 
 if __name__ == "__main__":

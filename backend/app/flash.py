@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import shutil
@@ -10,6 +10,7 @@ from pathlib import Path
 router = APIRouter()
 
 from . import paths
+from .security import require_token
 
 DATA_DIR = paths.data_dir()
 paths.migrate_legacy(DATA_DIR)
@@ -42,7 +43,7 @@ class BurnRequest(BaseModel):
 
 
 @router.post("/upload")
-async def upload_hex(file: UploadFile = File(...)):
+async def upload_hex(file: UploadFile = File(...), _=Depends(require_token)):
     name = Path(file.filename).name
     if not name.lower().endswith((".hex", ".bin")):
         raise HTTPException(status_code=400, detail="只支持 .hex / .bin 文件")
@@ -62,7 +63,7 @@ async def check_tool():
 
 
 @router.post("/burn")
-async def burn(req: BurnRequest):
+async def burn(req: BurnRequest, _=Depends(require_token)):
     filepath = FLASH_DIR / req.filename
     if not filepath.exists():
         raise HTTPException(status_code=400, detail="文件不存在，请先上传 HEX")

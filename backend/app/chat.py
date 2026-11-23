@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 import json
@@ -9,6 +9,7 @@ from pathlib import Path
 router = APIRouter()
 
 from . import paths
+from .security import require_token
 
 DATA_DIR = paths.data_dir()
 paths.migrate_legacy(DATA_DIR)
@@ -123,7 +124,7 @@ async def get_settings():
 
 
 @router.post("/settings")
-async def update_settings(body: dict):
+async def update_settings(body: dict, _=Depends(require_token)):
     from . import settings_store as cfg
     allowed = {"api_key", "base_url", "model"}
     cfg.save({k: v for k, v in body.items() if k in allowed})
@@ -131,7 +132,7 @@ async def update_settings(body: dict):
 
 
 @router.post("")
-async def chat(request: ChatRequest):
+async def chat(request: ChatRequest, _=Depends(require_token)):
     if request.stream:
         return StreamingResponse(stream_openai(request), media_type="text/event-stream")
 

@@ -1,4 +1,34 @@
-﻿const BASE = "http://127.0.0.1:8720";
+const BASE = "http://127.0.0.1:8720";
+
+let cachedToken: string | null = null;
+
+async function getToken(): Promise<string> {
+  const injected = (window as { chipmate?: { token?: string } }).chipmate?.token;
+  if (injected) return injected;
+  if (cachedToken !== null) return cachedToken;
+  try {
+    const r = await fetch(BASE + "/token");
+    cachedToken = r.ok ? ((await r.json()).token as string) || "" : "";
+  } catch {
+    cachedToken = "";
+  }
+  return cachedToken;
+}
+
+/** 所有请求都带本机令牌：后端拒绝没有令牌的写操作，避免本机网页白嫖 Key/额度 */
+async function apiFetch(input: string, init: RequestInit = {}): Promise<Response> {
+  const headers = new Headers(init.headers ?? {});
+  const t = await getToken();
+  if (t) headers.set("X-ChipMate-Token", t);
+  const r = await fetch(input, { ...init, headers });
+  if (r.status !== 401) return r;
+  cachedToken = null;
+  const retryToken = await getToken();
+  if (!retryToken) return r;
+  const retryHeaders = new Headers(init.headers ?? {});
+  retryHeaders.set("X-ChipMate-Token", retryToken);
+  return fetch(input, { ...init, headers: retryHeaders });
+}
 
 export type BackendStatus = "checking" | "online" | "offline";
 export type SerialSeverity = "critical" | "warning" | "info";
@@ -94,12 +124,12 @@ export interface SerialPortInfo {
 }
 
 export async function healthCheck(): Promise<HealthResponse> {
-  const r = await fetch(BASE + "/health");
+  const r = await apiFetch(BASE + "/health");
   return r.json();
 }
 
 export async function listChips(): Promise<ChipInfo[]> {
-  const r = await fetch(BASE + "/datasheet/chips");
+  const r = await apiFetch(BASE + "/datasheet/chips");
   return r.json();
 }
 
@@ -107,18 +137,18 @@ export async function uploadDatasheet(file: File, chipName: string): Promise<Upl
   const fd = new FormData();
   fd.append("file", file);
   fd.append("chip_name", chipName || file.name.replace(/\.pdf$/i, ""));
-  const r = await fetch(BASE + "/datasheet/upload", { method: "POST", body: fd });
+  const r = await apiFetch(BASE + "/datasheet/upload", { method: "POST", body: fd });
   return r.json();
 }
 
 export async function searchChip(name: string, query: string): Promise<SearchResult> {
   const q = query ? "?query=" + encodeURIComponent(query) : "";
-  const r = await fetch(BASE + "/datasheet/search/" + name + q);
+  const r = await apiFetch(BASE + "/datasheet/search/" + name + q);
   return r.json();
 }
 
 export async function chat(message: string, chipName: string, history?: {role:string;content:string}[]): Promise<ChatResponse> {
-  const r = await fetch(BASE + "/chat", {
+  const r = await apiFetch(BASE + "/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message, chip_name: chipName || "", history: history || [] })
@@ -135,7 +165,7 @@ export async function chatStream(
   signal?: AbortSignal,
   history?: {role:string;content:string}[],
 ): Promise<void> {
-  const r = await fetch(BASE + "/chat", {
+  const r = await apiFetch(BASE + "/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ message, chip_name: chipName || "", stream: true, history: history || [] }),
@@ -174,19 +204,19 @@ export async function chatStream(
 }
 
 export async function listSerialPorts(): Promise<SerialPortInfo[]> {
-  const r = await fetch(BASE + "/serial/ports");
+  const r = await apiFetch(BASE + "/serial/ports");
   return r.json();
 }
 
 export async function checkFlashTool(): Promise<{ok:boolean;version?:string;hint?:string}> {
-  const r = await fetch(BASE + "/flash/check");
+  const r = await apiFetch(BASE + "/flash/check");
   return r.json();
 }
 
 export async function uploadHex(file: File): Promise<{status:string;filename:string;size:number}> {
   const fd = new FormData();
   fd.append("file", file);
-  const r = await fetch(BASE + "/flash/upload", { method: "POST", body: fd });
+  const r = await apiFetch(BASE + "/flash/upload", { method: "POST", body: fd });
   return r.json();
 }
 
@@ -204,7 +234,7 @@ export async function flashBurn(
   onLog: (line: string) => void,
   onDone: (code: number) => void,
 ): Promise<void> {
-  const r = await fetch(BASE + "/flash/burn", {
+  const r = await apiFetch(BASE + "/flash/burn", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(req)
@@ -233,22 +263,22 @@ export async function flashBurn(
 }
 
 export async function serialSimulateStart(): Promise<StatusResponse> {
-  const r = await fetch(BASE + "/serial/simulate/start", { method: "POST" });
+  const r = await apiFetch(BASE + "/serial/simulate/start", { method: "POST" });
   return r.json();
 }
 
 export async function serialSimulateStop(): Promise<StatusResponse> {
-  const r = await fetch(BASE + "/serial/simulate/stop", { method: "POST" });
+  const r = await apiFetch(BASE + "/serial/simulate/stop", { method: "POST" });
   return r.json();
 }
 
 export async function serialStatus(): Promise<SerialStatusResponse> {
-  const r = await fetch(BASE + "/serial/status");
+  const r = await apiFetch(BASE + "/serial/status");
   return r.json();
 }
 
 export async function serialConnect(port: string, baudrate: number, bytesize?: number, parity?: string, stopbits?: number): Promise<SerialConnectResponse> {
-  const r = await fetch(BASE + "/serial/connect", {
+  const r = await apiFetch(BASE + "/serial/connect", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ port, baudrate, bytesize: bytesize ?? 8, parity: parity ?? "N", stopbits: stopbits ?? 1 })
@@ -257,23 +287,23 @@ export async function serialConnect(port: string, baudrate: number, bytesize?: n
 }
 
 export async function serialDisconnect(): Promise<StatusResponse> {
-  const r = await fetch(BASE + "/serial/disconnect", { method: "POST" });
+  const r = await apiFetch(BASE + "/serial/disconnect", { method: "POST" });
   return r.json();
 }
 
 export async function serialLines(since: number): Promise<SerialLinesResponse> {
-  const r = await fetch(BASE + "/serial/lines?since=" + (since || 0));
+  const r = await apiFetch(BASE + "/serial/lines?since=" + (since || 0));
   return r.json();
 }
 
 export async function getChatSettings(): Promise<{base_url:string;model:string;has_key:boolean}> {
-  const r = await fetch(BASE + "/chat/settings");
+  const r = await apiFetch(BASE + "/chat/settings");
   if (!r.ok) throw new Error("获取设置失败");
   return r.json();
 }
 
 export async function updateChatSettings(body: {api_key?:string;base_url?:string;model?:string}): Promise<{status:string}> {
-  const r = await fetch(BASE + "/chat/settings", {
+  const r = await apiFetch(BASE + "/chat/settings", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body)
@@ -286,7 +316,7 @@ export async function serialSend(data: string, hexMode: boolean, newline?: boole
   let url = BASE + "/serial/send?data=" + encodeURIComponent(data);
   if (hexMode) url += "&hex=1";
   if (newline === false) url += "&newline=0";
-  const r = await fetch(url, { method: "POST" });
+  const r = await apiFetch(url, { method: "POST" });
   return r.json();
 }
 
