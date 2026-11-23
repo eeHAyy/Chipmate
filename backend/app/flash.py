@@ -68,8 +68,11 @@ async def burn(req: BurnRequest):
         req.protocol = "auto"
 
     def gen():
-        cmd = [sys.executable, "-m", "stcgal",
-               "-P", req.protocol, "-p", req.port, "-b", str(req.baudrate)]
+        if getattr(sys, "frozen", False):
+            cmd = [sys.executable, "--stcgal"]
+        else:
+            cmd = [sys.executable, "-m", "stcgal"]
+        cmd += ["-P", req.protocol, "-p", req.port, "-b", str(req.baudrate)]
         if req.autoreset:
             cmd.append("-a")
         cmd.append(str(filepath))

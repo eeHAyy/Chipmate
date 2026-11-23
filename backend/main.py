@@ -1,3 +1,10 @@
+import sys
+
+if len(sys.argv) > 1 and sys.argv[1] == "--stcgal":
+    from stcgal.frontend import cli as stcgal_cli
+    sys.argv = ["stcgal"] + sys.argv[2:]
+    raise SystemExit(stcgal_cli())
+
 from dotenv import load_dotenv
 load_dotenv(dotenv_path="../.env")
 
@@ -8,7 +15,7 @@ from app.serial_monitor import router as serial_router
 from app.datasheet import router as datasheet_router
 from app.flash import router as flash_router
 
-app = FastAPI(title="ChipMate Backend", version="0.2.0")
+app = FastAPI(title="ChipMate Backend", version="0.2.1")
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,7 +31,7 @@ app.include_router(flash_router, prefix="/flash", tags=["flash"])
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "version": "0.2.0"}
+    return {"status": "ok", "version": "0.2.1"}
 
 if __name__ == "__main__":
     import uvicorn

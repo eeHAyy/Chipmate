@@ -84,7 +84,7 @@ async def stream_openai(request: ChatRequest):
     base_url = cfg.get("base_url")
 
     if not api_key:
-        yield f"data: {json.dumps({'error': '未配置 API Key'})}\n\n"
+        yield f"data: {json.dumps({'error': '未配置 API Key，请点右上角 ⚙ 打开“AI 设置”填入 Key'})}\n\n"
         return
 
     try:
@@ -139,7 +139,7 @@ async def chat(request: ChatRequest):
     base_url = cfg.get("base_url")
 
     if not api_key:
-        return {"reply": "未配置 API Key。请在项目根目录 .env 文件中配置 DEEPSEEK_API_KEY。\n获取 Key: https://platform.deepseek.com/api_keys"}
+        return {"reply": "未配置 API Key。请点右上角 ⚙ 打开“AI 设置”填入 Key（支持 DeepSeek / 豆包 / OpenAI / Ollama）。\n获取 Key: https://platform.deepseek.com/api_keys"}
 
     try:
         client = AsyncOpenAI(api_key=api_key, base_url=base_url)
