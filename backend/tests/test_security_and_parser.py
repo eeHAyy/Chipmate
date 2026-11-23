@@ -34,13 +34,16 @@ class TokenGuardTests(unittest.TestCase):
         self.assertEqual(r.status_code, 401)
 
     def test_write_endpoint_accepts_local_token(self):
-        token = self.client.get("/token").json()["token"]
+        token = self.client.get("/token", headers={"Origin": "http://127.0.0.1:5174"}).json()["token"]
         r = self.client.post("/serial/simulate/stop", headers={"X-ChipMate-Token": token})
         self.assertEqual(r.status_code, 200)
 
     def test_token_endpoint_refuses_foreign_origin(self):
         r = self.client.get("/token", headers={"Origin": "http://evil.example"})
         self.assertEqual(r.status_code, 403)
+
+    def test_token_endpoint_refuses_missing_origin(self):
+        self.assertEqual(self.client.get("/token").status_code, 403)
 
 
 class ParserTests(unittest.TestCase):

@@ -1,6 +1,6 @@
 {
   "name": "chipmate",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "AI-powered embedded development assistant",
   "author": "huangshenghua031",
   "main": "electron/main.js",

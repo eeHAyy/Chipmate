@@ -16,7 +16,7 @@ from app.serial_monitor import router as serial_router
 from app.datasheet import router as datasheet_router
 from app.flash import router as flash_router
 
-app = FastAPI(title="ChipMate Backend", version="0.4.1")
+app = FastAPI(title="ChipMate Backend", version="0.4.2")
 
 app.add_middleware(
     CORSMiddleware,
@@ -34,14 +34,14 @@ app.include_router(flash_router, prefix="/flash", tags=["flash"])
 @app.get("/token")
 async def local_token(request: Request):
     origin = request.headers.get("origin")
-    if origin and origin not in security.DEV_ORIGINS:
+    if origin not in security.DEV_ORIGINS:
         raise HTTPException(status_code=403, detail="该来源不允许读取本地令牌")
     return {"token": security.token()}
 
 
 @app.get("/health")
 async def health():
-    return {"status": "ok", "version": "0.4.1"}
+    return {"status": "ok", "version": "0.4.2"}
 
 if __name__ == "__main__":
     import uvicorn
